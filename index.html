@@ -102,6 +102,27 @@
       margin: 5px 0;
       color: #ffcc99;
     }
+
+    .operacao-form {
+      margin-top: 30px;
+    }
+
+    .operacao-form select,
+    .operacao-form input {
+      padding: 10px;
+      margin: 5px;
+      border-radius: 5px;
+      border: none;
+    }
+
+    .operacao-form button {
+      padding: 10px 20px;
+      background-color: #ff6600;
+      border: none;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -131,11 +152,23 @@
       <li>Definir saldo inicial</li>
       <li>Banir cliente</li>
       <li>Executar operações solicitadas</li>
-      <li>Visualizar relatórios</li>
     </ul>
     <div class="user-list">
       <h3>Usuários Cadastrados:</h3>
       <ul id="lista-usuarios"></ul>
+    </div>
+
+    <div class="operacao-form">
+      <h3>Executar operação:</h3>
+      <select id="user-operacao">
+        <!-- preenchido dinamicamente -->
+      </select>
+      <select id="tipo-operacao">
+        <option value="deposito">Depósito</option>
+        <option value="saque">Saque</option>
+      </select>
+      <input type="number" id="valor-operacao" placeholder="Valor">
+      <button onclick="executarOperacao()">Executar</button>
     </div>
   </div>
 
@@ -148,7 +181,7 @@
   </div>
 
   <script>
-    const senhaAdminFixa = "adm123"; // Senha única e fixa para acesso admin
+    const senhaAdminFixa = "adm123";
 
     const usuarios = {
       'joao': { senha: 'joao123', tipo: 'cliente', saldo: 1000 },
@@ -165,6 +198,7 @@
         loginForm.style.display = 'none';
         document.querySelector('.admin-area').style.display = 'block';
         mostrarUsuarios();
+        preencherSelectOperacao();
       } else if (usuarios[user] && usuarios[user].senha === pass) {
         loginForm.style.display = 'none';
         document.querySelector('.client-area').style.display = 'block';
@@ -180,6 +214,47 @@
       for (let user in usuarios) {
         lista.innerHTML += `<li><strong>${user}</strong> - Saldo: R$ ${usuarios[user].saldo.toFixed(2)}</li>`;
       }
+    }
+
+    function preencherSelectOperacao() {
+      const select = document.getElementById("user-operacao");
+      select.innerHTML = "";
+      for (let user in usuarios) {
+        const option = document.createElement("option");
+        option.value = user;
+        option.text = user;
+        select.appendChild(option);
+      }
+    }
+
+    function executarOperacao() {
+      const usuario = document.getElementById("user-operacao").value;
+      const tipo = document.getElementById("tipo-operacao").value;
+      const valor = parseFloat(document.getElementById("valor-operacao").value);
+
+      if (!usuarios[usuario]) {
+        alert("Usuário inválido");
+        return;
+      }
+
+      if (isNaN(valor) || valor <= 0) {
+        alert("Valor inválido");
+        return;
+      }
+
+      if (tipo === "deposito") {
+        usuarios[usuario].saldo += valor;
+      } else if (tipo === "saque") {
+        if (usuarios[usuario].saldo >= valor) {
+          usuarios[usuario].saldo -= valor;
+        } else {
+          alert("Saldo insuficiente para saque.");
+          return;
+        }
+      }
+
+      mostrarUsuarios();
+      alert("Operação realizada com sucesso.");
     }
 
     function depositar() {
